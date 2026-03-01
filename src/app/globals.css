@@ -363,6 +363,19 @@ a {
   gap: 0.72rem;
 }
 
+.post-cover {
+  margin: 0;
+}
+
+.post-cover-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(30, 40, 39, 0.04);
+}
+
 .markdown-shell {
   padding: 0;
   max-width: 72ch;

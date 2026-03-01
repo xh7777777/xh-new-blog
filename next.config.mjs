@@ -5,11 +5,15 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**'
+        hostname: '**.imxh777.com'
       },
       {
-        protocol: 'http',
-        hostname: '**'
+        protocol: 'https',
+        hostname: '**.oss-cn-beijing.aliyuncs.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'oss-cn-shanghai.aliyuncs.com'
       }
     ]
   }

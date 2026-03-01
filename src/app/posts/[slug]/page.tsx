@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
@@ -32,6 +33,37 @@ function createTagLookup(tags: Tag[]): Record<number, Tag> {
 
 function normalizeSlug(raw: string): string {
   return decodeURIComponent(raw).trim();
+}
+
+function normalizeCover(cover: string | null | undefined): string | undefined {
+  const normalized = cover?.trim();
+  return normalized || undefined;
+}
+
+function resolveCoverForMetadata(cover: string | null | undefined): string | undefined {
+  const normalized = normalizeCover(cover);
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
+  }
+
+  return `${siteConfig.url}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
+}
+
+function resolveCoverForRender(cover: string | null | undefined): string | undefined {
+  const normalized = normalizeCover(cover);
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
+  }
+
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
 }
 
 async function resolveBlogBySlugParam(rawSlug: string): Promise<{
@@ -76,11 +108,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     return { title: '文章不存在' };
   }
 
-  const cover = matchedBlog.cover
-    ? /^https?:\/\//i.test(matchedBlog.cover)
-      ? matchedBlog.cover
-      : `${siteConfig.url}${matchedBlog.cover.startsWith('/') ? matchedBlog.cover : `/${matchedBlog.cover}`}`
-    : undefined;
+  const cover = resolveCoverForMetadata(matchedBlog.cover);
 
   return {
     title: matchedBlog.title,
@@ -128,6 +156,7 @@ export default async function PostDetailPage({ params }: PostPageProps) {
     redirect(`/posts/${blog.slug}`);
   }
 
+  const cover = resolveCoverForRender(blog.cover);
   const tagLookup = createTagLookup(tags);
   const relatedBlogs = allBlogs
     .filter((candidate) => candidate.id !== blog.id)
@@ -152,6 +181,20 @@ export default async function PostDetailPage({ params }: PostPageProps) {
           { position: 3, name: blog.title, item: `${siteConfig.url}/posts/${blog.slug}` }
         ]}
       />
+
+      {cover && (
+        <FadeIn className="post-cover" delay={0.03}>
+          <Image
+            src={cover}
+            alt={`${blog.title} cover`}
+            width={1200}
+            height={630}
+            className="post-cover-image"
+            sizes="(max-width: 920px) 100vw, 900px"
+            priority
+          />
+        </FadeIn>
+      )}
 
       <FadeIn className="post-head">
         <p className="eyebrow">Article</p>
