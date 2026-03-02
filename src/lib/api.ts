@@ -58,7 +58,7 @@ type NextFetchInit = RequestInit & {
 async function requestJson<T>(
   path: string,
   init?: NextFetchInit,
-  revalidate = 120
+  revalidate = 60
 ): Promise<T> {
   const url = joinPath(SERVER_API_BASE_URL, path);
   const response = await fetch(url, {
@@ -81,6 +81,34 @@ async function requestJson<T>(
   }
 
   return (await response.json()) as T;
+}
+
+async function requestText(
+  path: string,
+  init?: NextFetchInit,
+  revalidate = 60
+): Promise<string> {
+  const url = joinPath(SERVER_API_BASE_URL, path);
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      Accept: 'application/rss+xml, application/xml, text/xml, text/plain',
+      ...(init?.headers || {})
+    },
+    next: {
+      revalidate,
+      ...(init?.next || {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to request ${path}, status=${response.status}, body=${errorBody}`
+    );
+  }
+
+  return response.text();
 }
 
 export async function getPublishedBlogs(): Promise<BlogListItem[]> {
@@ -128,4 +156,8 @@ export async function getBlogsByIds(ids: number[]): Promise<BlogListItem[]> {
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   );
+}
+
+export async function getRssXml(): Promise<string> {
+  return requestText('/blogs/rss.xml', undefined, 300);
 }

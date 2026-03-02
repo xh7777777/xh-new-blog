@@ -23,7 +23,10 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' }]
   },
   alternates: {
-    canonical: '/'
+    canonical: '/',
+    types: {
+      'application/rss+xml': `${siteConfig.url}/rss.xml`
+    }
   },
   openGraph: {
     type: 'website',
